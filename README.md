@@ -43,11 +43,12 @@ Order of operations:
 ## Configuration
 The config file is specified in JSON format. Modify the file in accordance to your analysis(nodes number, dim size etc) 
 
+## Results and explanation
+A report on Latent Dependency Structure with IAF Flow optimization on Variational Autoencoder is given.
+
 ## References
 The code was written inspired by the following code URLs https://github.com/ys1998/vae-latent-structure
 && https://github.com/altosaar/variational-autoencoder
-
-
 
 
 
