@@ -24,7 +24,7 @@ class InverseAutoregressiveFlow(nn.Module):
     s = s + self.sigmoid_arg_bias 
     sigmoid = self.sigmoid(s)
     z = sigmoid * input + (1 - sigmoid) * m
-    return z, -self.log_sigmoid(s)
+    return z, -self.log_sigmoid(s) #log_sigmoid(s) = log_det(|dz_t/dz_t-1|).
 
 
 class FlowSequential(nn.Sequential):
@@ -35,7 +35,7 @@ class FlowSequential(nn.Sequential):
     for block in self._modules.values():
       input, log_prob = block(input, context)
       total_log_prob += log_prob
-    return input, total_log_prob
+    return input, total_log_prob #total_log_prob = sum over the dets for each bloch/IAF layer.
 
 
 class MaskedLinear(nn.Module):

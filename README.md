@@ -15,26 +15,29 @@ Clone the repository
 ```bash
 git clone https://github.com/MordehayM/Latent-Dependency-Structure-with-IAF-Flow-optimization-on-Variational-Autoencoder.git
 ```
+Install the packages that appear in the requirements.txt file 
 
 ## Usage
 ```bash
+Order of operations:
+
 #mnsit download
-python mnist_create.py
+  python mnist_create.py
 # train - latent dependencies is learned - epochs~200
-python train.py --config config.json
+  python train.py --config config.json
 # train - latent dependencies is fixed- epochs~1000, set freeze variable in train.py file
 # and change require_grad=False to the gating variable
-python train.py --config config.json  
+  python train.py --config config.json  
 # resume from checkpoint
-python train.py --resume <path_to_checkpoint>
-# using multiple GPUs (equivalent to "CUDA_VISIBLE_DEVICES=2,3 python train.py -c config.py")
-python train.py --device 2,3 -c config.json 
+  python train.py --resume <path_to_checkpoint>
+# using multiple GPUs (equivalent to "CUDA_VISIBLE_DEVICES=2 python train.py -c config.py")
+  python train.py --device 2 -c config.json 
 # test
-python test.py --resume <path_to_checkpoint>
+  python test.py --resume <path_to_checkpoint>
 # sample - crete new samples
-python sample.py --resume <path_to_checkpoint>
+  python sample.py --resume <path_to_checkpoint>
 # visualization 
-tensorboard --logdir <path_to_log_dir>
+  tensorboard --logdir <path_to_log_dir>
 ```
 ## Configuration
 The config file is specified in JSON format. Modify the file in accordance with your analysis(nodes number, dim size etc) 

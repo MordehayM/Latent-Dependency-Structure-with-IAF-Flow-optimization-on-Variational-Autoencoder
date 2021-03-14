@@ -50,9 +50,10 @@ class GraphVAE(BaseModel):
                 nn.BatchNorm1d(128),
                 nn.ELU(),
                 nn.Linear(128, node_dim),
-                nn.Linear(node_dim, 3*node_dim) # split into mu and logvar and h
+                nn.Linear(node_dim, 3*node_dim) # split into mu and logvar and h(h for IAF blocks), single h for each node,
+                                                #shared h to the IAFs chain.
             )
-        for _ in range(n_nodes)]) # ignore z_n
+        for _ in range(n_nodes)])
 
 
 
@@ -83,7 +84,8 @@ class GraphVAE(BaseModel):
 
         # mean of Bernoulli variables c_{i,j} representing edges
         self.gating_params = nn.ParameterList([
-            nn.Parameter(torch.empty(n_nodes - i - 1, 1, 1).fill_(0.5), requires_grad=True) #for fixed structure requires_grad=False, other-wise requires_grad=True
+            nn.Parameter(torch.empty(n_nodes - i - 1, 1, 1).fill_(0.5), requires_grad=True) #for fixed structure
+                                                                # requires_grad=False, other-wise requires_grad=True
         for i in range(n_nodes-1)]) # ignore z_n
 
 
@@ -115,8 +117,6 @@ class GraphVAE(BaseModel):
             hx = self.encoder(x)
 
             # sample z_n from N(0, I)
-            #z_pp= self.unit_normal.sample([x.size(0)]).to(x.device)
-            #parents = [z_n]
             mu_z = []
             sigma_z = []
             bu = self.bottom_up[-1](hx)
@@ -125,20 +125,11 @@ class GraphVAE(BaseModel):
             z0 = mu_bu + sigma_bu * self.unit_normal.sample([x.size(0)]).to(x.device)
             log_z_x = [log_gaussian(z0, mu_bu, sigma_bu**2)]
             z0_T, total_log_prob = self.IAFs[-1](input=z0.unsqueeze(1), context=h_bu.unsqueeze(1))
-            z0_T = z0_T.squeeze(1)
+            z0_T = z0_T.squeeze(1) #parent of z1
             total_log_prob = total_log_prob.squeeze(1)
-            log_z = [log_gaussian(z0_T, torch.tensor([0], device=x.device), torch.tensor([1], device=x.device))]
+            log_z = [log_gaussian(z0_T, torch.tensor([0], device=x.device), torch.tensor([1], device=x.device))] #z0~N(0,1)
             det_tot = [total_log_prob]
             parents = [z0_T]
-            #parents = [z_pp]
-            #mu_z.append(mu_bu) 
-            #sigma_z.append(sigma_bu)
-
-            #mu_z_prior = [torch.zeros(x.size(0), self.node_dim).to(x.device)]  # [B x node_dim]
-            #sigma_z_prior = [torch.ones(x.size(0), self.node_dim).to(x.device)]  # [B x node_dim]
-
-            #mu_bu_l = [torch.zeros(x.size(0), self.node_dim).to(x.device)]  # [B x node_dim]
-            #sigma_bu_l = [torch.ones(x.size(0), self.node_dim).to(x.device)]  # [B x node_dim]
 
             for i in reversed(range(self.n_nodes-1)):
                 
@@ -168,16 +159,14 @@ class GraphVAE(BaseModel):
                 td = self.top_down[i](parent_vector)
                 mu_td, sigma_td = td[:, :self.node_dim], F.softplus(td[:, self.node_dim:])
 
-                #mu_z_prior.append(mu_td)
-                #sigma_z_prior.append(sigma_td)
+
 
                 # bottom-up inference
                 bu = self.bottom_up[i](hx)
                 mu_bu, sigma_bu, h_bu = bu[:, :self.node_dim], F.softplus(bu[:, self.node_dim:self.node_dim * 2]), \
                                         bu[:, self.node_dim * 2:]
 
-                #mu_bu_l.append(mu_bu)
-                #sigma_bu_l.append(sigma_bu)
+
 
                 # precision weighted fusion
                 mu_zi = (mu_td * sigma_bu**2 + mu_bu * sigma_td**2) / (sigma_td**2 + sigma_bu**2 + EPSILON)
@@ -187,23 +176,14 @@ class GraphVAE(BaseModel):
                 log_z_x.append(log_gaussian(z_i, mu_zi, sigma_zi ** 2))
                 zi_T, total_log_prob = self.IAFs[i](input=z_i.unsqueeze(1), context=h_bu.unsqueeze(1))
                 zi_T = zi_T.squeeze(1)
-                total_log_prob = total_log_prob.squeeze(1)
-                #det_tot += total_log_prob
-
+                total_log_prob = total_log_prob.squeeze(1) #sum of -log_det(|dz_t/dz_t-1|) for the node zi
                 det_tot.append(total_log_prob)
-                #log_z += log_gaussian(zi_T, mu_td, sigma_td**2)
-                log_z.append(log_gaussian(zi_T, mu_td, sigma_td**2)) # store samples and parameters
-                parents.append(zi_T)
-                #mu_z.append(mu_zi)
-                #sigma_z.append(sigma_zi)
-
+                log_z.append(log_gaussian(zi_T, mu_td, sigma_td**2)) #calc log_p(zi_T/parents(zi),c) with
+                                                                    # p(z/parents(z),c)~N(mu_td, sigma_td)
+                parents.append(zi_T) #attaching zi_T to be the parents for the next node.
 
             # sample from approximate posterior distribution q(z_1, z_2 ... z_n|x)
-            #z = torch.ones(x.size(0), self.node_dim).to(x.device)
-            #for i in parents:
-            #    z = z*i
             z = torch.cat(parents, dim=1) #concatenation over the nodes
-            #z = parents[-1]
             out = torch.sigmoid(self.decoder(z))
 
             # build output
@@ -212,16 +192,6 @@ class GraphVAE(BaseModel):
             output[f'det_{sample}'] = det_tot
             output[f'log_z_{sample}'] = log_z
             output[f'log_z_x_{sample}'] = log_z_x
-
-        '''
-        output['means'] = mu_z
-        output['sigmas'] = sigma_z
-        output['means_prior'] = mu_z_prior
-        output['sigmas_prior'] = sigma_z_prior
-        output['means_bu'] = mu_bu_l
-        output['sigmas_bu'] = sigma_bu_l
-        '''
-        
         # output['gate_params'] = self.gating_params.detach()
         return output
         
@@ -231,30 +201,14 @@ class GraphVAE(BaseModel):
         for i in reversed(range(self.n_nodes-1)):
             # compute gating constants c_{i,j}
             c = self.gating_params[i].data
-            
-            '''
-            mu = self.gating_params[i] #[num of parents x 1 x 1]
-            eps1, eps2 = self.gumbel.sample(mu.size()).to(device), self.gumbel.sample(mu.size()).to(device)
-            num = torch.exp((eps2 - eps1)/self.tau)
-            #num = torch.exp((eps2 - eps1) / self.tau)
-            t1 = torch.pow(mu, 1./self.tau)
-            t2 = torch.pow((1.-mu), 1./self.tau)*num
-            c = t1 / (t1 + t2 + EPSILON) #[num of parents x 1 x 1]
-            if torch.isnan(t1).any() or torch.isnan(t2).any() or torch.isnan(c).any() or torch.isnan(mu).any():
-                print(t1,t2,c,mu)
-            '''
             # find concatenated parent vector
-            parent_vector = (c * torch.stack(parents)).permute(1, 0, 2).reshape(num_images, -1)  # [num_images x num of parents], this is the sampling action
+            parent_vector = (c * torch.stack(parents)).permute(1, 0, 2).reshape(num_images, -1)  #[num_images x num of parents]
             # top-down inference
             td = self.top_down[i](parent_vector)
             mu_td, sigma_td = td[:, :self.node_dim], F.softplus(td[:, self.node_dim:])
             z_i = mu_td + sigma_td * self.unit_normal.sample([num_images]).to(device)
             parents.append(z_i)
-
-        #z = torch.ones(num_images, self.node_dim).to(device)
-        #for i in parents:
-        #    z = z * i
-        #z = parents[-1]
+        #sample from approximate prior distribution p(z_1, z_2 ... z_n|c)
         z = torch.cat(parents, dim=1)
         out = torch.sigmoid(self.decoder(z))
         return out
