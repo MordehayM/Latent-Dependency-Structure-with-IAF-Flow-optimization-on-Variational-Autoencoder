@@ -57,7 +57,7 @@ class GraphVAE(BaseModel):
 
 
 
-        # top-down inference: predicts parameters of P(z_i | Pa(z_i))
+        # top-down inference: predicts parameters of P(z_i | Pa(z_i), c_i)
         self.top_down = nn.ModuleList([
             nn.Sequential(
                 nn.Linear((n_nodes - i - 1)*node_dim, 128), # parents of z_i are z_{i+1} ... z_N
@@ -85,7 +85,7 @@ class GraphVAE(BaseModel):
         # mean of Bernoulli variables c_{i,j} representing edges
         self.gating_params = nn.ParameterList([
             nn.Parameter(torch.empty(n_nodes - i - 1, 1, 1).fill_(0.5), requires_grad=True) #for fixed structure
-                                                                # requires_grad=False, other-wise requires_grad=True
+                                                                # requires_grad=False, otherwise requires_grad=True
         for i in range(n_nodes-1)]) # ignore z_n
 
 
@@ -104,10 +104,8 @@ class GraphVAE(BaseModel):
                                                           num_hidden=hidden_size,
                                                           num_context=node_dim))
             modules.append(flow.Reverse(node_dim))
-        self.IAFs = nn.ModuleList([flow.FlowSequential(*modules) for _ in range(n_nodes)]) # FlowSequential for each node z_n(yielding in z_nT)
+        self.IAFs = nn.ModuleList([flow.FlowSequential(*modules) for _ in range(n_nodes)]) # FlowSequential for each node z_n(yields z_nT)
 
-        #self.IAFs_m = nn.ModuleList([nn.Sequential(*modules) for _ in range(n_nodes)])
-        #self.IAFs = nn.ModuleList([flow.FlowSequential(*self.IAFs_m[i]) for i in range(n_nodes)])
     def forward(self, x, n_samples=1): #n_sample for the likelihood calculation at the test phase
         # x: (batch_size, input_size)
         output = {}
@@ -116,24 +114,22 @@ class GraphVAE(BaseModel):
             x = torch.reshape(x, (-1,784))
             hx = self.encoder(x)
 
-            # sample z_n from N(0, I)
-            mu_z = []
-            sigma_z = []
+
             bu = self.bottom_up[-1](hx)
             mu_bu, sigma_bu, h_bu = bu[:, :self.node_dim], F.softplus(bu[:, self.node_dim:self.node_dim*2]),\
                               bu[:, self.node_dim*2:]
             z0 = mu_bu + sigma_bu * self.unit_normal.sample([x.size(0)]).to(x.device)
-            log_z_x = [log_gaussian(z0, mu_bu, sigma_bu**2)]
+            log_z_x = [log_gaussian(z0, mu_bu, sigma_bu**2)] #log_z_x = log_q(z|x)
             z0_T, total_log_prob = self.IAFs[-1](input=z0.unsqueeze(1), context=h_bu.unsqueeze(1))
             z0_T = z0_T.squeeze(1) #parent of z1
             total_log_prob = total_log_prob.squeeze(1)
-            log_z = [log_gaussian(z0_T, torch.tensor([0], device=x.device), torch.tensor([1], device=x.device))] #z0~N(0,1)
+            log_z = [log_gaussian(z0_T, torch.tensor([0], device=x.device), torch.tensor([1], device=x.device))] #z0~N(0,1), root node
             det_tot = [total_log_prob]
             parents = [z0_T]
 
             for i in reversed(range(self.n_nodes-1)):
                 
-                #c = self.gating_params[i].data  #for fixed structure, other-wise this line is commented
+                #c = self.gating_params[i].data  #for fixed structure, otherwise this line is commented
                 
                 #print(self.gating_params[i].data)
                 
@@ -170,7 +166,7 @@ class GraphVAE(BaseModel):
 
                 # precision weighted fusion
                 mu_zi = (mu_td * sigma_bu**2 + mu_bu * sigma_td**2) / (sigma_td**2 + sigma_bu**2 + EPSILON)
-                sigma_zi = (sigma_bu * sigma_td) / (torch.sqrt(sigma_td**2 + sigma_bu**2) + EPSILON)#B x 1
+                sigma_zi = (sigma_bu * sigma_td) / (torch.sqrt(sigma_td**2 + sigma_bu**2) + EPSILON)
                 # sample z_i from P(z_i | pa(z_i), x)
                 z_i = mu_zi + sigma_zi * self.unit_normal.sample([x.size(0)]).to(x.device)
                 log_z_x.append(log_gaussian(z_i, mu_zi, sigma_zi ** 2))
@@ -178,9 +174,9 @@ class GraphVAE(BaseModel):
                 zi_T = zi_T.squeeze(1)
                 total_log_prob = total_log_prob.squeeze(1) #sum of -log_det(|dz_t/dz_t-1|) for the node zi
                 det_tot.append(total_log_prob)
-                log_z.append(log_gaussian(zi_T, mu_td, sigma_td**2)) #calc log_p(zi_T/parents(zi),c) with
-                                                                    # p(z/parents(z),c)~N(mu_td, sigma_td)
-                parents.append(zi_T) #attaching zi_T to be the parents for the next node.
+                log_z.append(log_gaussian(zi_T, mu_td, sigma_td**2)) #calc log_p(zi_T|parents(zi),c) with
+                                                                    # p(z|parents(z),c)~N(mu_td, sigma_td)
+                parents.append(zi_T) #attaching zi_T to the parents vector.
 
             # sample from approximate posterior distribution q(z_1, z_2 ... z_n|x)
             z = torch.cat(parents, dim=1) #concatenation over the nodes
@@ -202,7 +198,7 @@ class GraphVAE(BaseModel):
             # compute gating constants c_{i,j}
             c = self.gating_params[i].data
             # find concatenated parent vector
-            parent_vector = (c * torch.stack(parents)).permute(1, 0, 2).reshape(num_images, -1)  #[num_images x num of parents]
+            parent_vector = (c * torch.stack(parents)).permute(1, 0, 2).reshape(num_images, -1)
             # top-down inference
             td = self.top_down[i](parent_vector)
             mu_td, sigma_td = td[:, :self.node_dim], F.softplus(td[:, self.node_dim:])
