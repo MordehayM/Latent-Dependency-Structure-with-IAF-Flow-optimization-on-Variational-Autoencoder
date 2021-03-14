@@ -18,6 +18,8 @@ git clone https://github.com/MordehayM/Latent-Dependency-Structure-with-IAF-Flow
 
 ## Usage
 ```bash
+#mnsit download
+python mnist_create.py
 # train - latent dependencies is learned - epochs~200
 python train.py --config config.json
 # train - latent dependencies is fixed- epochs~1000, set freeze variable in train.py file
