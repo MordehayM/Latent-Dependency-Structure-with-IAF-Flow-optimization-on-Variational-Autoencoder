@@ -1,6 +1,6 @@
 # Variational Autoencoders with Jointly Optimized Latent Dependency Structure
 
-This is a PyTorch implementation of ["Variational Autoencoders with Jointly Optimized Latent Dependency Structure"](https://openreview.net/forum?id=SJgsCjCqt7) which appeared in ICLR '19.
+This is a implementation of ["Variational Autoencoders with Jointly Optimized Latent Dependency Structure"](https://openreview.net/forum?id=SJgsCjCqt7) which appeared in ICLR '19.
 
 ## Initial setup
 Clone the repository
