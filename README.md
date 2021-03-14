@@ -1,5 +1,5 @@
 # Latent-Dependency-Structure-with-IAF-Flow-optimization-on-Variational-Autoencoder
-
+### By Reut Benaim and Mordehay Moradi
 In this project, we propose to improve VAE performance.
 The project has been compounded by both adding hierarchical latent dependencies
 and building an inference network with normalizing flow.
