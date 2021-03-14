@@ -26,7 +26,7 @@ Order of operations:
   python mnist_create.py
 # train - latent dependencies is learned - epochs~200
   python train.py --config config.json
-# train - latent dependencies is fixed- epochs~1000, set freeze variable in train.py file
+# train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
 # and change require_grad=False to the gating variable
   python train.py --config config.json  
 # resume from checkpoint
