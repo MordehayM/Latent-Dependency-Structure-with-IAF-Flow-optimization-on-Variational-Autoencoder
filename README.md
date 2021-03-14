@@ -41,7 +41,7 @@ Order of operations:
   tensorboard --logdir <path_to_log_dir>
 ```
 ## Configuration
-The config file is specified in JSON format. Modify the file in accordance with your analysis(nodes number, dim size etc) 
+The config file is specified in JSON format. Modify the file in accordance to your analysis(nodes number, dim size etc) 
 
 ## References
 The code was written inspired by the following code URLs https://github.com/ys1998/vae-latent-structure
