@@ -3,10 +3,11 @@
 In this project, we propose to improve VAE performance.
 The project has been compounded by both adding hierarchical latent dependencies
 and building an inference network with normalizing flow.
-We use the methods from the paper "VARIATIONAL AUTOENCODERS WITH JOINTLY OPTIMIZED
-LATENT DEPENDENCY STRUCTURE" (Jiawei He1∗ & Yu Gong1, etal) that suggests learning these latent dependencies,
+We use the methods from the paper ["Variational Autoencoders with Jointly Optimized
+Latent Dependency Structure (Jiawei He1∗ & Yu Gong1, et al)"](https://openreview.net/forum?id=SJgsCjCqt7) that suggests learning these latent dependencies,
 rather than using predefined models with potentially limited performance,
-and the paper "Improved Variational Inference with Inverse Autoregressive Flow" (Diederik P. Kingma, etal) 
+and the paper ["Improved Variational Inference with Inverse Autoregressive Flow" (Diederik P. Kingma, et al)](https://arxiv.org/abs/1606.04934
+) 
 that suggests a new type of normalizing flow framework, inverse autoregressive flow (IAF),
 which improves on the diagonal Gaussian approximate posteriors and scales well to high-dimensional latent space.
 
@@ -34,7 +35,7 @@ Order of operations:
   python train.py --device 2 -c config.json 
 # test
   python test.py --resume <path_to_checkpoint>
-# sample - crete new samples
+# sample - create new samples
   python sample.py --resume <path_to_checkpoint>
 # visualization 
   tensorboard --logdir <path_to_log_dir>
