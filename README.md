@@ -4,9 +4,9 @@ In this project, we propose to improve VAE performance.
 The project has been compounded by both adding hierarchical latent dependencies
 and building an inference network with normalizing flow.
 We use the methods from the paper "VARIATIONAL AUTOENCODERS WITH JOINTLY OPTIMIZED
-LATENT DEPENDENCY STRUCTURE" (Jiawei He1∗ & Yu Gong1, n.d.) that suggests learning these latent dependencies,
+LATENT DEPENDENCY STRUCTURE" (Jiawei He1∗ & Yu Gong1, etal) that suggests learning these latent dependencies,
 rather than using predefined models with potentially limited performance,
-and the paper "Improved Variational Inference with Inverse Autoregressive Flow" (Diederik P. Kingma, n.d.) 
+and the paper "Improved Variational Inference with Inverse Autoregressive Flow" (Diederik P. Kingma, etal) 
 that suggests a new type of normalizing flow framework, inverse autoregressive flow (IAF),
 which improves on the diagonal Gaussian approximate posteriors and scales well to high-dimensional latent space.
 
