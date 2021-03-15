@@ -28,11 +28,12 @@ Install the packages that appear in the requirements.txt file
 | --- | --- |
 | Mnsit download | `python mnist_create.py` |
 | Train - latent dependencies is learned - epochs~200 | `python train.py --config config.json` |
-| Train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
-  and change require_grad=False to the gating variable in model.py file. | `python train.py --config config.json` |
-| Mnsit download | `python mnist_create.py` |
-| Mnsit download | `python mnist_create.py` |
-| Mnsit download | `python mnist_create.py` |
+| Train - latent dependencies is fixed - epochs~800, set freeze variable in train.py file and change require_grad=False to the gating variable in model.py file. | `python train.py --config config.json` |
+| Resume from checkpoint | `python train.py --resume <path_to_checkpoint>` |
+| Using multiple GPUs (equivalent to `"CUDA_VISIBLE_DEVICES=2 python train.py -c config.py"`) | `python train.py --device 2 -c config.json` |
+| Test | `python test.py --path <path_to_checkpoint>` |
+| Sample - create new samples | `python test.py --path <path_to_checkpoint>` |
+| Visualization | `tensorboard --logdir <path_to_log_dir>` |
   
 - Train - latent dependencies is learned - epochs~200
   
