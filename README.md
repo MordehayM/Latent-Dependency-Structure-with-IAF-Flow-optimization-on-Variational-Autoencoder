@@ -24,11 +24,15 @@ Install the packages that appear in the requirements.txt file
 
 **Order of operations:**
 
-- Mnsit download
-  
-  `
-  python mnist_create.py
-  `
+| Description | Command |
+| --- | --- |
+| Mnsit download | `python mnist_create.py` |
+| Train - latent dependencies is learned - epochs~200 | `python train.py --config config.json` |
+| Train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
+  and change require_grad=False to the gating variable in model.py file. | `python train.py --config config.json` |
+| Mnsit download | `python mnist_create.py` |
+| Mnsit download | `python mnist_create.py` |
+| Mnsit download | `python mnist_create.py` |
   
 - Train - latent dependencies is learned - epochs~200
   
@@ -68,12 +72,7 @@ The code was written inspired by the following code URLs https://github.com/ys19
 && https://github.com/altosaar/variational-autoencoder
 
 
-```python
-variables = ["SSO"]                            # 1 feature
-variables = ["SSO", "SSC"]                     # 2 features
-variables = ["SSO", "SSC", "RSI"]              # 3 features
-variables = ["SSO", "SSC", "RSI", ... , "Xn"]  # n features
-```
+
 
 
 
