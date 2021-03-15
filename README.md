@@ -19,27 +19,34 @@ git clone https://github.com/MordehayM/Latent-Dependency-Structure-with-IAF-Flow
 Install the packages that appear in the requirements.txt file 
 
 ## Usage
-```bash
+
 Order of operations:
 
-#mnsit download
-  python mnist_create.py
-# train - latent dependencies is learned - epochs~200
-  python train.py --config config.json
-# train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
-# and change require_grad=False to the gating variable
-  python train.py --config config.json  
-# resume from checkpoint
-  python train.py --resume <path_to_checkpoint>
-# using multiple GPUs (equivalent to "CUDA_VISIBLE_DEVICES=2 python train.py -c config.py")
-  python train.py --device 2 -c config.json 
-# test
-  python test.py --resume <path_to_checkpoint>
-# sample - create new samples
-  python sample.py --resume <path_to_checkpoint>
-# visualization 
-  tensorboard --logdir <path_to_log_dir>
-```
+- Mnsit download
+  
+  ```python mnist_create.py```
+- Train - latent dependencies is learned - epochs~200
+  ```python train.py --config config.json```
+- Train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
+  and change require_grad=False to the gating variable
+  
+  ```python train.py --config config.json```
+- Resume from checkpoint
+  
+  ```python train.py --resume <path_to_checkpoint>```
+- Using multiple GPUs (equivalent to `````"CUDA_VISIBLE_DEVICES=2 python train.py -c config.py"`````)
+  
+  ```python train.py --device 2 -c config.json```
+- Test
+  
+  ```python test.py --resume <path_to_checkpoint>```
+- Sample - create new samples
+  
+  ```python sample.py --resume <path_to_checkpoint>```
+- Visualization 
+  
+  ```tensorboard --logdir <path_to_log_dir>```
+
 ## Configuration
 The config file is specified in JSON format. Modify the file in accordance to your analysis(nodes number, dim size etc) 
 
