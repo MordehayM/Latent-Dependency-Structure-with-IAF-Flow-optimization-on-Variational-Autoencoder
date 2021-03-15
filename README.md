@@ -25,7 +25,7 @@ Install the packages that appear in the requirements.txt file
 **Order of operations:**
 
 - Mnsit download
-  ```
+  ```text
   python mnist_create.py
   ```
 - Train - latent dependencies is learned - epochs~200
