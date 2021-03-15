@@ -1,6 +1,6 @@
 # Latent-Dependency-Structure-with-IAF-Flow-optimization-on-Variational-Autoencoder
 ### By Reut Benaim and Mordehay Moradi
-***
+
 In this project, we propose to improve VAE performance.
 The project has been compounded by both adding hierarchical latent dependencies
 and building an inference network with normalizing flow.
@@ -13,7 +13,7 @@ that suggests a new type of normalizing flow framework, inverse autoregressive f
 which improves on the diagonal Gaussian approximate posteriors and scales well to high-dimensional latent space.
 
 ## Initial setup
-***
+
 Clone the repository
 ```bash
 git clone https://github.com/MordehayM/Latent-Dependency-Structure-with-IAF-Flow-optimization-on-Variational-Autoencoder.git
@@ -25,11 +25,13 @@ Install the packages that appear in the requirements.txt file
 **Order of operations:**
 
 - Mnsit download
-  
-  `python mnist_create.py`
+  ```
+  python mnist_create.py
+  ```
 - Train - latent dependencies is learned - epochs~200
-  
-  `python train.py --config config.json`
+  ```
+  python train.py --config config.json
+  ```
 - Train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
   and change require_grad=False to the gating variable in model.py file.
   
@@ -51,21 +53,25 @@ Install the packages that appear in the requirements.txt file
   `tensorboard --logdir <path_to_log_dir>`
 
 ## Configuration
-***
+
 The config file is specified in JSON format. Modify the file in accordance to your analysis(nodes number, dim size etc) 
 
 ## Results and explanation
-***
+
 A report on Latent Dependency Structure with IAF Flow optimization on Variational Autoencoder is given.
 
 ## References
-***
+
 The code was written inspired by the following code URLs https://github.com/ys1998/vae-latent-structure
 && https://github.com/altosaar/variational-autoencoder
 
 
-
-
+```python
+variables = ["SSO"]                            # 1 feature
+variables = ["SSO", "SSC"]                     # 2 features
+variables = ["SSO", "SSC", "RSI"]              # 3 features
+variables = ["SSO", "SSC", "RSI", ... , "Xn"]  # n features
+```
 
 
 
