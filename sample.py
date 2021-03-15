@@ -22,7 +22,7 @@ def get_instance(module, name, config, *args):
     return getattr(module, config[name]['type'])(*args, **config[name]['args'])
 
 
-def main(config, resume):
+def main(config, path):
     train_logger = Logger()
 
     # setup data_loader instances
@@ -34,7 +34,7 @@ def main(config, resume):
     model = get_instance(module_arch, 'arch', config)
     
     device = torch.device("cpu")
-    checkpoint = torch.load(resume, map_location=torch.device(device))
+    checkpoint = torch.load(path, map_location=torch.device(device))
     model.load_state_dict(checkpoint['state_dict'])
     num_images = 64
     images = model.sample(num_images=num_images, device=device)
@@ -47,7 +47,7 @@ def main(config, resume):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
-    parser.add_argument('-r', '--resume', default=None, type=str,
+    parser.add_argument('-r', '--path', default=None, type=str,
                         help='path to latest checkpoint (default: None)')
     parser.add_argument('-d', '--device', default=None, type=str,
                         help='indices of GPUs to enable (default: all)')           
@@ -55,10 +55,10 @@ if __name__ == '__main__':
 
 
 
-    if args.resume:
+    if args.path:
         # load config from checkpoint if new config file is not given.
-        # Use '--config' and '--resume' together to fine-tune trained model with changed configurations.
-        config = torch.load(args.resume)['config']
+        # Use '--config' and '--path' together to fine-tune trained model with changed configurations.
+        config = torch.load(args.path)['config']
 
         # with open(args.config) as handle:
         #     config = json.load(handle)
@@ -70,4 +70,4 @@ if __name__ == '__main__':
     if args.device:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
-    main(config, args.resume)
+    main(config, args.path)

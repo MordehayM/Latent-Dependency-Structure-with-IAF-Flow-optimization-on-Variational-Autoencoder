@@ -25,13 +25,15 @@ Install the packages that appear in the requirements.txt file
 **Order of operations:**
 
 - Mnsit download
-  ```text
+  
+  `
   python mnist_create.py
-  ```
+  `
+  
 - Train - latent dependencies is learned - epochs~200
-  ```
-  python train.py --config config.json
-  ```
+  
+  `python train.py --config config.json`
+  
 - Train - latent dependencies is fixed- epochs~800, set freeze variable in train.py file
   and change require_grad=False to the gating variable in model.py file.
   
@@ -44,10 +46,10 @@ Install the packages that appear in the requirements.txt file
   `python train.py --device 2 -c config.json`
 - Test
   
-  `python test.py --resume <path_to_checkpoint>`
+  `python test.py --path <path_to_checkpoint>`
 - Sample - create new samples
   
-  `python sample.py --resume <path_to_checkpoint>`
+  `python sample.py --path <path_to_checkpoint>`
 - Visualization 
   
   `tensorboard --logdir <path_to_log_dir>`

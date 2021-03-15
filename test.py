@@ -20,7 +20,7 @@ def log_likelihood_bernoulli(x, mu):
 
 
 
-def main(config, resume):
+def main(config, path):
     # setup data_loader instances
     data_loader = getattr(module_data, config['data_loader']['type'])(
         config['data_loader']['args']['data_dir'],
@@ -40,7 +40,7 @@ def main(config, resume):
     metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
     # load state dict
-    checkpoint = torch.load(resume)
+    checkpoint = torch.load(path)
     state_dict = checkpoint['state_dict']
     if config['n_gpu'] > 1:
         model = torch.nn.DataParallel(model)
@@ -102,16 +102,16 @@ def main(config, resume):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Template')
 
-    parser.add_argument('-r', '--resume', default=None, type=str,
+    parser.add_argument('-p', '--path', default=None, type=str,
                         help='path to latest checkpoint (default: None)')
     parser.add_argument('-d', '--device', default=None, type=str,
                         help='indices of GPUs to enable (default: all)')
 
     args = parser.parse_args()
 
-    if args.resume:
-        config = torch.load(args.resume)['config']
+    if args.path:
+        config = torch.load(args.path)['config']
     if args.device:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
-    main(config, args.resume)
+    main(config, args.path)
